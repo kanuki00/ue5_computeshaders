@@ -14,6 +14,8 @@
 		Z = z;\
 	}
 
+class FBaseComputeShader;
+
 struct MYSHADERS_API FBaseComputeShaderDispatchParams
 {
 	FBaseComputeShaderDispatchParams() {}
@@ -30,8 +32,6 @@ struct MYSHADERS_API FBaseComputeShaderDispatchParams
 	int Input[2];
 	int Output;
 };
-
-
 
 // This is a public interface that we define so outside code can invoke our compute shader.
 class MYSHADERS_API FBaseComputeShaderInterface {

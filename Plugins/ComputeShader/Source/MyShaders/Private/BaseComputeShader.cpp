@@ -55,7 +55,7 @@ private:
 }; // class FBaseComputeShader
 
 // This will tell the engine to create the shader and where the shader entry point is.
-//                            ShaderType                            ShaderPath                     Shader function name    Type
+//                            ShaderType                ShaderPath              Shader function name    Type
 IMPLEMENT_GLOBAL_SHADER(FBaseComputeShader, "/MyShaders/BaseComputeShader.usf", "BaseComputeShader", SF_Compute);
 
 void FBaseComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate& RHICmdList, FBaseComputeShaderDispatchParams Params, TFunction<void(int OutputVal)> AsyncCallback) 
@@ -74,22 +74,21 @@ void FBaseComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate&
 
 		TShaderMapRef<FBaseComputeShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel), PermutationVector);
 
+		if (ComputeShader.IsValid())
+		{
+			FRDGBuffer* OutputBuffer;
+			FRDGBuffer* InputBuffer;
 
-		bool bIsShaderValid = ComputeShader.IsValid();
+			FBaseComputeShader::FParameters* PassParameters = GraphBuilder.AllocParameters<FBaseComputeShader::FParameters>();
 
-		if (bIsShaderValid) {
-			FBaseComputeShader::FParameters* PassParameters = /*issue*/GraphBuilder.AllocParameters</*issue*/FBaseComputeShader::FParameters>();
-
-			const void* RawData = (void*)/*issue*/Params.Input;
+			const void* RawData = (void*)Params.Input;
 			int NumInputs = 2;
 			int InputSize = sizeof(int);
-			FRDGBufferRef InputBuffer = CreateUploadBuffer(GraphBuilder, TEXT("InputBuffer"), InputSize, NumInputs, RawData, InputSize * NumInputs);
+			InputBuffer = CreateUploadBuffer(GraphBuilder, TEXT("InputBuffer"), InputSize, NumInputs, RawData, InputSize * NumInputs);
 
 			PassParameters->Input = GraphBuilder.CreateSRV(FRDGBufferSRVDesc(InputBuffer, PF_R32_SINT));
 
-			FRDGBufferRef OutputBuffer = GraphBuilder.CreateBuffer(
-				FRDGBufferDesc::CreateBufferDesc(sizeof(int32), 1),
-				TEXT("OutputBuffer"));
+			OutputBuffer = GraphBuilder.CreateBuffer(FRDGBufferDesc::CreateBufferDesc(sizeof(int32), 1), TEXT("OutputBuffer"));
 
 			PassParameters->Output = GraphBuilder.CreateUAV(FRDGBufferUAVDesc(OutputBuffer, PF_R32_SINT));
 
@@ -98,15 +97,15 @@ void FBaseComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate&
 				RDG_EVENT_NAME("ExecuteBaseComputeShader"),
 				PassParameters,
 				ERDGPassFlags::AsyncCompute,
-				[&PassParameters, /*issue*/ComputeShader, GroupCount](FRHIComputeCommandList& RHICmdList)
+				[&PassParameters, ComputeShader, GroupCount](FRHIComputeCommandList& RHICmdList)
 				{
-					/*issue*/FComputeShaderUtils::Dispatch(RHICmdList, /*issue*/ComputeShader, *PassParameters, GroupCount);
+					FComputeShaderUtils::Dispatch(RHICmdList, ComputeShader, *PassParameters, GroupCount);
 				});
 
 			FRHIGPUBufferReadback* GPUBufferReadback = new FRHIGPUBufferReadback(TEXT("ExecuteBaseComputeShaderOutput"));
 			AddEnqueueCopyPass(GraphBuilder, GPUBufferReadback, OutputBuffer, 0u);
 
-			auto RunnerFunc = [GPUBufferReadback, /*issue*/AsyncCallback](auto&& RunnerFunc) -> void {
+			auto RunnerFunc = [GPUBufferReadback, AsyncCallback](auto&& RunnerFunc) -> void {
 				if (GPUBufferReadback->IsReady()) {
 
 					int32* Buffer = (int32*)GPUBufferReadback->Lock(1);
@@ -114,8 +113,8 @@ void FBaseComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate&
 
 					GPUBufferReadback->Unlock();
 
-					AsyncTask(ENamedThreads::GameThread, [/*issue*/AsyncCallback, OutVal]() {
-						/*issue*/AsyncCallback(OutVal);
+					AsyncTask(ENamedThreads::GameThread, [AsyncCallback, OutVal]() {
+						AsyncCallback(OutVal);
 						});
 
 					delete GPUBufferReadback;
@@ -130,12 +129,10 @@ void FBaseComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate&
 			AsyncTask(ENamedThreads::ActualRenderingThread, [RunnerFunc]() {
 				RunnerFunc(RunnerFunc);
 				});
-
 		}
 		else {
 			// We silently exit here as we don't want to crash the game if the shader is not found or has an error.
 		}
 	}
-
 	GraphBuilder.Execute();
 }
