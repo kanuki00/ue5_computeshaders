@@ -4,8 +4,10 @@
 #include "PlayerCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
-//#include "../../../Unreal Projects/UE5_ComputeShaders/Plugins/ComputeShader/Source/MyShaders/Public/MyShaders.h"
-#include "MyShaders/Public/MySimpleComputeShader.h"
+
+// Shader includes
+//#include "MyShaders/Public/MySimpleComputeShader.h"
+#include "MyShaders/Public/BaseComputeShader.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -43,14 +45,24 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	/*
 	FMySimpleComputeShaderDispatchParams Params(1, 1, 1);
 
 	Params.Input[0] = 6;
 	Params.Input[1] = 5;
-	
+
 	FMySimpleComputeShaderInterface::Dispatch(Params, [this](int OutputVal) {
 		this->Set(OutputVal);
 	});
+	*/
+	FBaseComputeShaderDispatchParams Params(1, 1, 1);
+
+	Params.Input[0] = 10;
+	Params.Input[1] = 20;
+
+	FBaseComputeShaderInterface::Dispatch(Params, [this](int OutputVal) {
+		this->Set(OutputVal);
+		});
 	
 }
 

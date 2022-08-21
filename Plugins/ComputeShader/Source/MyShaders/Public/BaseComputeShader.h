@@ -4,27 +4,34 @@
 #include "GenericPlatform/GenericPlatformMisc.h"
 #include "Kismet/BlueprintAsyncActionBase.h"
 
-#include "BaseComputeShader.generated.h"
+//#include "BaseComputeShader.generated.h"
+
+#define CREATE_DISPATCH_PARAMS_CONSTRUCTOR(StructName) \
+	StructName(int x, int y, int z) \
+	{\
+		X = x;\
+		Y = y;\
+		Z = z;\
+	}
 
 struct MYSHADERS_API FBaseComputeShaderDispatchParams
 {
-	int X;
-	int Y;
-	int Z;
+	FBaseComputeShaderDispatchParams() {}
 
+	FBaseComputeShaderDispatchParams(int x, int y, int z)
+	{
+		X = x;
+		Y = y;
+		Z = z;
+	}
+
+	int X, Y, Z;
 
 	int Input[2];
 	int Output;
-
-
-
-	FBaseComputeShaderDispatchParams(int x, int y, int z)
-		: X(x)
-		, Y(y)
-		, Z(z)
-	{
-	}
 };
+
+
 
 // This is a public interface that we define so outside code can invoke our compute shader.
 class MYSHADERS_API FBaseComputeShaderInterface {
@@ -54,6 +61,9 @@ public:
 	}
 };
 
+// This class is only needed for blueprint implementation. 
+
+/*
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBaseComputeShaderLibrary_AsyncExecutionCompleted, const int, Value);
 
 UCLASS() // Change the _API to match your project
@@ -62,6 +72,9 @@ class MYSHADERS_API UBaseComputeShaderLibrary_AsyncExecution : public UBlueprint
 	GENERATED_BODY()
 
 public:
+
+	int Arg1;
+	int Arg2;
 
 	// Execute the actual load
 	virtual void Activate() override {
@@ -80,11 +93,6 @@ public:
 	UPROPERTY(BlueprintAssignable)
 		FOnBaseComputeShaderLibrary_AsyncExecutionCompleted Completed;
 
-	int Arg1;
-	int Arg2;
-
-	// This part is needed for blueprint implementation. 
-	/*
 	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true", Category = "ComputeShader", WorldContext = "WorldContextObject"))
 	static UMySimpleComputeShaderLibrary_AsyncExecution* ExecuteBaseComputeShader(UObject* WorldContextObject, int Arg1, int Arg2) 
 	{
@@ -95,5 +103,5 @@ public:
 
 		return Action;
 	}
-	*/
 };
+*/
