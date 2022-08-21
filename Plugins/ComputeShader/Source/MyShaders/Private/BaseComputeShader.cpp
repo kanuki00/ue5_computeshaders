@@ -1,6 +1,6 @@
 
-#include "MySimpleComputeShader.h"
-#include "MyShaders/Public/MySimpleComputeShader.h"
+#include "BaseComputeShader.h"
+#include "MyShaders/Public/BaseComputeShader.h"
 #include "PixelShaderUtils.h"
 #include "RenderCore/Public/RenderGraphUtils.h"
 #include "MeshPassProcessor.inl"
@@ -12,19 +12,19 @@
 #include "CanvasTypes.h"
 #include "MaterialShader.h"
 
-DECLARE_STATS_GROUP(TEXT("MySimpleComputeShader"), STATGROUP_MySimpleComputeShader, STATCAT_Advanced);
-DECLARE_CYCLE_STAT(TEXT("MySimpleComputeShader Execute"), STAT_MySimpleComputeShader_Execute, STATGROUP_MySimpleComputeShader);
+DECLARE_STATS_GROUP(TEXT("BaseComputeShader"), STATGROUP_BaseComputeShader, STATCAT_Advanced);
+DECLARE_CYCLE_STAT(TEXT("BaseComputeShader Execute"), STAT_BaseComputeShader_Execute, STATGROUP_BaseComputeShader);
 
 // This class carries our parameter declarations and acts as the bridge between cpp and HLSL.
-class MYSHADERS_API FMySimpleComputeShader : public FGlobalShader
+class MYSHADERS_API FBaseComputeShader : public FGlobalShader
 {
 public:
 
-	DECLARE_GLOBAL_SHADER(FMySimpleComputeShader);
-	SHADER_USE_PARAMETER_STRUCT(FMySimpleComputeShader, FGlobalShader);
+	DECLARE_GLOBAL_SHADER(FBaseComputeShader);
+	SHADER_USE_PARAMETER_STRUCT(FBaseComputeShader, FGlobalShader);
 
-	class FMySimpleComputeShader_Perm_TEST : SHADER_PERMUTATION_INT("TEST", 1);
-	using FPermutationDomain = TShaderPermutationDomain<FMySimpleComputeShader_Perm_TEST>;
+	class FBaseComputeShader_Perm_TEST : SHADER_PERMUTATION_INT("TEST", 1);
+	using FPermutationDomain = TShaderPermutationDomain<FBaseComputeShader_Perm_TEST>;
 
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
 		/*
@@ -89,33 +89,33 @@ public:
 		// FForwardLightingParameters::ModifyCompilationEnvironment(Parameters.Platform, OutEnvironment);
 	}
 private:
-}; // class FMySimpleComputeShader
+}; // class FBaseComputeShader
 
 // This will tell the engine to create the shader and where the shader entry point is.
 //                            ShaderType                            ShaderPath                     Shader function name    Type
-IMPLEMENT_GLOBAL_SHADER(FMySimpleComputeShader, "/MyShaders/MySimpleComputeShader.usf", "MySimpleComputeShader", SF_Compute);
+IMPLEMENT_GLOBAL_SHADER(FBaseComputeShader, "/MyShaders/BaseComputeShader.usf", "BaseComputeShader", SF_Compute);
 
-void FMySimpleComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate& RHICmdList, FMySimpleComputeShaderDispatchParams Params, TFunction<void(int OutputVal)> AsyncCallback) {
+void FBaseComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate& RHICmdList, FBaseComputeShaderDispatchParams Params, TFunction<void(int OutputVal)> AsyncCallback) {
 	FRDGBuilder GraphBuilder(RHICmdList);
 
 	{
-		SCOPE_CYCLE_COUNTER(STAT_MySimpleComputeShader_Execute);
-		DECLARE_GPU_STAT(MySimpleComputeShader)
-		RDG_EVENT_SCOPE(GraphBuilder, "MySimpleComputeShader");
-		RDG_GPU_STAT_SCOPE(GraphBuilder, MySimpleComputeShader);
+		SCOPE_CYCLE_COUNTER(STAT_BaseComputeShader_Execute);
+		DECLARE_GPU_STAT(BaseComputeShader)
+		RDG_EVENT_SCOPE(GraphBuilder, "BaseComputeShader");
+		RDG_GPU_STAT_SCOPE(GraphBuilder, BaseComputeShader);
 
-		typename FMySimpleComputeShader::FPermutationDomain PermutationVector;
+		typename FBaseComputeShader::FPermutationDomain PermutationVector;
 
 		// Add any static permutation options here
 		// PermutationVector.Set<FMySimpleComputeShader::FMyPermutationName>(12345);
 
-		TShaderMapRef<FMySimpleComputeShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel), PermutationVector);
+		TShaderMapRef<FBaseComputeShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel), PermutationVector);
 
 
 		bool bIsShaderValid = ComputeShader.IsValid();
 
 		if (bIsShaderValid) {
-			FMySimpleComputeShader::FParameters* PassParameters = GraphBuilder.AllocParameters<FMySimpleComputeShader::FParameters>();
+			FBaseComputeShader::FParameters* PassParameters = GraphBuilder.AllocParameters<FBaseComputeShader::FParameters>();
 
 
 			const void* RawData = (void*)Params.Input;
@@ -134,7 +134,7 @@ void FMySimpleComputeShaderInterface::DispatchRenderThread(FRHICommandListImmedi
 
 			auto GroupCount = FComputeShaderUtils::GetGroupCount(FIntVector(Params.X, Params.Y, Params.Z), FComputeShaderUtils::kGolden2DGroupSize);
 			GraphBuilder.AddPass(
-				RDG_EVENT_NAME("ExecuteMySimpleComputeShader"),
+				RDG_EVENT_NAME("ExecuteBaseComputeShader"),
 				PassParameters,
 				ERDGPassFlags::AsyncCompute,
 				[&PassParameters, ComputeShader, GroupCount](FRHIComputeCommandList& RHICmdList)
@@ -143,7 +143,7 @@ void FMySimpleComputeShaderInterface::DispatchRenderThread(FRHICommandListImmedi
 				});
 
 
-			FRHIGPUBufferReadback* GPUBufferReadback = new FRHIGPUBufferReadback(TEXT("ExecuteMySimpleComputeShaderOutput"));
+			FRHIGPUBufferReadback* GPUBufferReadback = new FRHIGPUBufferReadback(TEXT("ExecuteBaseComputeShaderOutput"));
 			AddEnqueueCopyPass(GraphBuilder, GPUBufferReadback, OutputBuffer, 0u);
 
 			auto RunnerFunc = [GPUBufferReadback, AsyncCallback](auto&& RunnerFunc) -> void {
