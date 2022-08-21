@@ -2,3 +2,5 @@
 Binaries/
 DerivedDataCache/
 Intermediate/
+Plugins/ComputeShader/Binaries/
+Plugins/ComputeShader/Intermediate/
