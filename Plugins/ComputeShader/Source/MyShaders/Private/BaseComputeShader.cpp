@@ -17,7 +17,7 @@ DECLARE_STATS_GROUP(TEXT("BaseComputeShader"), STATGROUP_BaseComputeShader, STAT
 DECLARE_CYCLE_STAT(TEXT("BaseComputeShader Execute"), STAT_BaseComputeShader_Execute, STATGROUP_BaseComputeShader);
 */
 
-/*This class carries our parameter declarationsand acts as the bridge between cppand HLSL.*/
+/*This class carries our parameter declarations and acts as the bridge between cppand HLSL.*/
 class MYSHADERS_API FBaseComputeShader : public FGlobalShader
 {
 public:
