@@ -41,9 +41,9 @@ void APlayerCharacter::Tick(float DeltaTime)
 
 	FBaseComputeShaderDispatchParams Params(1, 1, 1);
 
-	Params.Input[0] = 34.0f;
-	Params.Input[1] = 10.0f;
-	
+	Params.Input[0] = 34.5f;
+	Params.Input[1] = 10.f;
+
 	FBaseComputeShaderInterface::Dispatch(Params, [&](float OutputVal) 
 	{
 		Result = OutputVal;

@@ -24,31 +24,25 @@ public:
 
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
 
-		SHADER_PARAMETER_RDG_BUFFER_SRV(Buffer<int>, IntInput)
-		SHADER_PARAMETER_RDG_BUFFER_UAV(RWBuffer<int>, IntOutput)
+		SHADER_PARAMETER_RDG_BUFFER_SRV(Buffer<float>, IntInput)
+		SHADER_PARAMETER_RDG_BUFFER_UAV(RWBuffer<float>, IntOutput)
 
 	END_SHADER_PARAMETER_STRUCT()
 
 public:
 	static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters)
 	{
-		//const FPermutationDomain PermutationVector(Parameters.PermutationId);
-
-		return true;
+		return FGlobalShader::ShouldCompilePermutation(Parameters);
 	}
 
 	static void ModifyCompilationEnvironment(const FGlobalShaderPermutationParameters& Parameters, FShaderCompilerEnvironment& OutEnvironment)
 	{
 		FGlobalShader::ModifyCompilationEnvironment(Parameters, OutEnvironment);
 
-		//const FPermutationDomain PermutationVector(Parameters.PermutationId);
-
 		OutEnvironment.SetDefine(TEXT("THREADS_X"), NUM_THREADS_MySimpleComputeShader_X);
 		OutEnvironment.SetDefine(TEXT("THREADS_Y"), NUM_THREADS_MySimpleComputeShader_Y);
 		OutEnvironment.SetDefine(TEXT("THREADS_Z"), NUM_THREADS_MySimpleComputeShader_Z);
-
 	}
-private:
 }; // class FBaseComputeShader
 
 // This will tell the engine to create the shader and where the shader entry point is.
@@ -71,8 +65,8 @@ void FBaseComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate&
 			FRDGBuffer* InputBuffer = CreateUploadBuffer(GraphBuilder, TEXT("InputBuffer"), sizeof(int), 2, (void*)Params.Input, sizeof(int) * 2);
 			FRDGBuffer* OutputBuffer = GraphBuilder.CreateBuffer(FRDGBufferDesc::CreateBufferDesc(sizeof(int), 1), TEXT("OutputBuffer"));
 
-			PassParameters->IntInput = GraphBuilder.CreateSRV(FRDGBufferSRVDesc(InputBuffer, PF_R32_SINT));
-			PassParameters->IntOutput = GraphBuilder.CreateUAV(FRDGBufferUAVDesc(OutputBuffer, PF_R32_SINT)); //PF_R32_FLOAT
+			PassParameters->IntInput = GraphBuilder.CreateSRV(FRDGBufferSRVDesc(InputBuffer, PF_R32_FLOAT));
+			PassParameters->IntOutput = GraphBuilder.CreateUAV(FRDGBufferUAVDesc(OutputBuffer, PF_R32_FLOAT)); //PF_R32_FLOAT PF_R32_SINT
 			
 			auto GroupCount = FComputeShaderUtils::GetGroupCount(FIntVector(Params.X, Params.Y, Params.Z), FComputeShaderUtils::kGolden2DGroupSize);
 
@@ -88,8 +82,8 @@ void FBaseComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate&
 			auto RunnerFunc = [GPUBufferReadback, AsyncCallback](auto&& RunnerFunc) -> void {
 				if (GPUBufferReadback->IsReady()) {
 
-					int32* Buffer = (int32*)GPUBufferReadback->Lock(1);
-					int OutVal = Buffer[0];
+					float* Buffer = (float*)GPUBufferReadback->Lock(1);
+					float OutVal = Buffer[0];
 
 					GPUBufferReadback->Unlock();
 

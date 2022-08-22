@@ -32,7 +32,7 @@ public:
 		UCameraComponent* Camera;
 
 	// Result of compute shader
-	int Result;
+	float Result;
 
 protected:
 	// Called when the game starts or when spawned

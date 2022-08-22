@@ -29,10 +29,10 @@ struct MYSHADERS_API FBaseComputeShaderDispatchParams
 
 	int X, Y, Z;
 
-	int Input[2];
+	float Input[2];
 };
 
-typedef TFunction<void(int OutputVal)> CALL;
+typedef TFunction<void(float OutputVal)> CALL;
 
 // This is a public interface that we define so outside code can invoke our compute shader.
 class MYSHADERS_API FBaseComputeShaderInterface {

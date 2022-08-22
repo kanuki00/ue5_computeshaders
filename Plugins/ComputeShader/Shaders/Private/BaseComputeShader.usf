@@ -1,7 +1,7 @@
 #include "/Engine/Public/Platform.ush"
 
-Buffer<int> IntInput;
-RWBuffer<int> IntOutput;
+Buffer<float> IntInput;
+RWBuffer<float> IntOutput;
 
 [numthreads(THREADS_X, THREADS_Y, THREADS_Z)]
 void BaseComputeShader(uint3 DispatchThreadId : SV_DispatchThreadID, uint GroupIndex : SV_GroupIndex)
