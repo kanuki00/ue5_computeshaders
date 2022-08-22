@@ -11,8 +11,11 @@
 #include "CanvasTypes.h"
 #include "MaterialShader.h"
 
+// Profiling Macros PM1
+/*
 DECLARE_STATS_GROUP(TEXT("BaseComputeShader"), STATGROUP_BaseComputeShader, STATCAT_Advanced);
 DECLARE_CYCLE_STAT(TEXT("BaseComputeShader Execute"), STAT_BaseComputeShader_Execute, STATGROUP_BaseComputeShader);
+*/
 
 /*This class carries our parameter declarationsand acts as the bridge between cppand HLSL.*/
 class MYSHADERS_API FBaseComputeShader : public FGlobalShader
@@ -63,10 +66,13 @@ void FBaseComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate&
 	FRDGBuilder GraphBuilder(RHICmdList);
 	// new scope
 	{
+		// PM1
+		/*
 		SCOPE_CYCLE_COUNTER(STAT_BaseComputeShader_Execute);
 		DECLARE_GPU_STAT(BaseComputeShader)
 		RDG_EVENT_SCOPE(GraphBuilder, "BaseComputeShader");
 		RDG_GPU_STAT_SCOPE(GraphBuilder, BaseComputeShader);
+		*/
 
 		typename FBaseComputeShader::FPermutationDomain PermutationVector;
 
@@ -94,14 +100,11 @@ void FBaseComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate&
 			PassParameters->Output = GraphBuilder.CreateUAV(FRDGBufferUAVDesc(OutputBuffer, PF_R32_SINT));
 
 			auto GroupCount = FComputeShaderUtils::GetGroupCount(FIntVector(Params.X, Params.Y, Params.Z), FComputeShaderUtils::kGolden2DGroupSize);
-			GraphBuilder.AddPass(
-				RDG_EVENT_NAME("ExecuteBaseComputeShader"),
-				PassParameters,
-				ERDGPassFlags::AsyncCompute,
-				[&PassParameters, ComputeShader, GroupCount](FRHIComputeCommandList& RHICmdList)
+			GraphBuilder.AddPass(RDG_EVENT_NAME("ExecuteBaseComputeShader"), PassParameters, ERDGPassFlags::AsyncCompute, [&PassParameters, ComputeShader, GroupCount](FRHIComputeCommandList& RHICmdList)
 				{
 					FComputeShaderUtils::Dispatch(RHICmdList, ComputeShader, *PassParameters, GroupCount);
-				});
+				}
+			);
 
 			FRHIGPUBufferReadback* GPUBufferReadback = new FRHIGPUBufferReadback(TEXT("ExecuteBaseComputeShaderOutput"));
 			AddEnqueueCopyPass(GraphBuilder, GPUBufferReadback, OutputBuffer, 0u);
@@ -114,9 +117,11 @@ void FBaseComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate&
 
 					GPUBufferReadback->Unlock();
 
-					AsyncTask(ENamedThreads::GameThread, [AsyncCallback, OutVal]() {
+					AsyncTask(ENamedThreads::GameThread, [AsyncCallback, OutVal]() 
+						{
 						AsyncCallback(OutVal);
-						});
+						}
+					);
 
 					delete GPUBufferReadback;
 				}
@@ -133,8 +138,8 @@ void FBaseComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate&
 		}
 		else {
 			// We silently exit here as we don't want to crash the game if the shader is not found or has an error.
-
 		} 
 	} // end new scope
+
 	GraphBuilder.Execute();
 }
