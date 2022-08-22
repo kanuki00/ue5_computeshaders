@@ -87,7 +87,7 @@ public:
 	int Arg2;
 
 	// This part is needed for blueprint implementation. 
-	/*
+	
 	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true", Category = "ComputeShader", WorldContext = "WorldContextObject"))
 	static UMySimpleComputeShaderLibrary_AsyncExecution* ExecuteBaseComputeShader(UObject* WorldContextObject, int Arg1, int Arg2) 
 	{
@@ -98,5 +98,4 @@ public:
 
 		return Action;
 	}
-	*/
 };

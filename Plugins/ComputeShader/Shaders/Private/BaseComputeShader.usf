@@ -1,11 +1,11 @@
 #include "/Engine/Public/Platform.ush"
 
-Buffer<int> Input;
-RWBuffer<int> Output;
+Buffer<int> IntInput;
+RWBuffer<int> IntOutput;
 
 [numthreads(THREADS_X, THREADS_Y, THREADS_Z)]
 void BaseComputeShader(uint3 DispatchThreadId : SV_DispatchThreadID, uint GroupIndex : SV_GroupIndex)
 {
 	// Outputs one number
-	Output[0] = Input[0] - Input[1];
+	IntOutput[0] = IntInput[0] - IntInput[1];
 }

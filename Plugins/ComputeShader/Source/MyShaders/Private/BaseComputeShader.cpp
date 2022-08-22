@@ -11,34 +11,28 @@
 #include "CanvasTypes.h"
 #include "MaterialShader.h"
 
-// Profiling Macros PM1
-/*
-DECLARE_STATS_GROUP(TEXT("BaseComputeShader"), STATGROUP_BaseComputeShader, STATCAT_Advanced);
-DECLARE_CYCLE_STAT(TEXT("BaseComputeShader Execute"), STAT_BaseComputeShader_Execute, STATGROUP_BaseComputeShader);
-*/
-
-/*This class carries our parameter declarations and acts as the bridge between cppand HLSL.*/
+// This class carries our parameter declarations and acts as the bridge between cpp and HLSL.
 class MYSHADERS_API FBaseComputeShader : public FGlobalShader
 {
 public:
 
+	// Declare this class as a global shader
 	DECLARE_GLOBAL_SHADER(FBaseComputeShader);
-	SHADER_USE_PARAMETER_STRUCT(FBaseComputeShader, FGlobalShader);
 
-	class FBaseComputeShader_Perm_TEST : SHADER_PERMUTATION_INT("TEST", 1);
-	using FPermutationDomain = TShaderPermutationDomain<FBaseComputeShader_Perm_TEST>;
+	// Tells the engine that this shader uses a structure for its parameters
+	SHADER_USE_PARAMETER_STRUCT(FBaseComputeShader, FGlobalShader);
 
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
 
-		SHADER_PARAMETER_RDG_BUFFER_SRV(Buffer<int>, Input)
-		SHADER_PARAMETER_RDG_BUFFER_UAV(RWBuffer<int>, Output)
+		SHADER_PARAMETER_RDG_BUFFER_SRV(Buffer<int>, IntInput)
+		SHADER_PARAMETER_RDG_BUFFER_UAV(RWBuffer<int>, IntOutput)
 
 	END_SHADER_PARAMETER_STRUCT()
 
 public:
 	static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters)
 	{
-		const FPermutationDomain PermutationVector(Parameters.PermutationId);
+		//const FPermutationDomain PermutationVector(Parameters.PermutationId);
 
 		return true;
 	}
@@ -47,7 +41,7 @@ public:
 	{
 		FGlobalShader::ModifyCompilationEnvironment(Parameters, OutEnvironment);
 
-		const FPermutationDomain PermutationVector(Parameters.PermutationId);
+		//const FPermutationDomain PermutationVector(Parameters.PermutationId);
 
 		OutEnvironment.SetDefine(TEXT("THREADS_X"), NUM_THREADS_MySimpleComputeShader_X);
 		OutEnvironment.SetDefine(TEXT("THREADS_Y"), NUM_THREADS_MySimpleComputeShader_Y);
@@ -66,43 +60,22 @@ void FBaseComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate&
 	FRDGBuilder GraphBuilder(RHICmdList);
 	// new scope
 	{
-		// PM1
-		/*
-		SCOPE_CYCLE_COUNTER(STAT_BaseComputeShader_Execute);
-		DECLARE_GPU_STAT(BaseComputeShader)
-		RDG_EVENT_SCOPE(GraphBuilder, "BaseComputeShader");
-		RDG_GPU_STAT_SCOPE(GraphBuilder, BaseComputeShader);
-		*/
-
-		typename FBaseComputeShader::FPermutationDomain PermutationVector;
-
-		// Add any static permutation options here
-		// PermutationVector.Set<FMySimpleComputeShader::FMyPermutationName>(12345);
+		FShader::FPermutationDomain PermutationVector;
 
 		TShaderMapRef<FBaseComputeShader> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel), PermutationVector);
 
 		if (ComputeShader.IsValid())
 		{
-			FRDGBuffer* OutputBuffer;
-			FRDGBuffer* InputBuffer;
-
 			FBaseComputeShader::FParameters* PassParameters = GraphBuilder.AllocParameters<FBaseComputeShader::FParameters>();
 
-			const void* RawData = (void*)Params.Input;
-			int NumInputs = 2;
-			int InputSize = sizeof(int);
-			InputBuffer = CreateUploadBuffer(GraphBuilder, TEXT("InputBuffer"), InputSize, NumInputs, RawData, InputSize * NumInputs);
+			FRDGBuffer* InputBuffer = CreateUploadBuffer(GraphBuilder, TEXT("InputBuffer"), sizeof(int), 2, (void*)Params.Input, sizeof(int) * 2);
+			FRDGBuffer* OutputBuffer = GraphBuilder.CreateBuffer(FRDGBufferDesc::CreateBufferDesc(sizeof(int), 1), TEXT("OutputBuffer"));
+
+			PassParameters->IntInput = GraphBuilder.CreateSRV(FRDGBufferSRVDesc(InputBuffer, PF_R32_SINT));
+			PassParameters->IntOutput = GraphBuilder.CreateUAV(FRDGBufferUAVDesc(OutputBuffer, PF_R32_SINT)); //PF_R32_FLOAT
 			
-			PassParameters->Input = GraphBuilder.CreateSRV(FRDGBufferSRVDesc(InputBuffer, PF_R32_SINT));
-			//PassParameters->Input = GraphBuilder.CreateSRV(FRDGBufferSRVDesc(InputBuffer, PF_R32_FLOAT));
-
-			int OutputSize = sizeof(int);
-			OutputBuffer = GraphBuilder.CreateBuffer(FRDGBufferDesc::CreateBufferDesc(OutputSize, 1), TEXT("OutputBuffer"));
-
-			PassParameters->Output = GraphBuilder.CreateUAV(FRDGBufferUAVDesc(OutputBuffer, PF_R32_SINT));
-			//PassParameters->Output = GraphBuilder.CreateUAV(FRDGBufferUAVDesc(OutputBuffer, PF_R32_FLOAT));
-
 			auto GroupCount = FComputeShaderUtils::GetGroupCount(FIntVector(Params.X, Params.Y, Params.Z), FComputeShaderUtils::kGolden2DGroupSize);
+
 			GraphBuilder.AddPass(RDG_EVENT_NAME("ExecuteBaseComputeShader"), PassParameters, ERDGPassFlags::AsyncCompute, [&PassParameters, ComputeShader, GroupCount](FRHIComputeCommandList& RHICmdList)
 				{
 					FComputeShaderUtils::Dispatch(RHICmdList, ComputeShader, *PassParameters, GroupCount);
@@ -129,15 +102,19 @@ void FBaseComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate&
 					delete GPUBufferReadback;
 				}
 				else {
-					AsyncTask(ENamedThreads::ActualRenderingThread, [RunnerFunc]() {
+					AsyncTask(ENamedThreads::ActualRenderingThread, [RunnerFunc]() 
+						{
 						RunnerFunc(RunnerFunc);
-						});
+						}
+					);
 				}
 			};
 
-			AsyncTask(ENamedThreads::ActualRenderingThread, [RunnerFunc]() {
+			AsyncTask(ENamedThreads::ActualRenderingThread, [RunnerFunc]() 
+				{
 				RunnerFunc(RunnerFunc);
-				});
+				}
+			);
 		}
 		else {
 			// We silently exit here as we don't want to crash the game if the shader is not found or has an error.
