@@ -32,7 +32,6 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
@@ -42,14 +41,16 @@ void APlayerCharacter::Tick(float DeltaTime)
 
 	FBaseComputeShaderDispatchParams Params(1, 1, 1);
 
-	Params.Input[0] = 56;
-	Params.Input[1] = 2;
+	Params.Input[0] = 34.0f;
+	Params.Input[1] = 17.0f;
 	
-	FBaseComputeShaderInterface::Dispatch(Params, [&](int OutputVal) {
+	FBaseComputeShaderInterface::Dispatch(Params, [&](float OutputVal) 
+	{
 		Result = OutputVal;
-		});
+	});
 	
-	if (GEngine)GEngine->AddOnScreenDebugMessage(1, 0.02f, FColor::Orange, FString::FromInt(Result));
+	if (GEngine)GEngine->AddOnScreenDebugMessage(1, 0.02f, FColor::Orange, FString::SanitizeFloat(Result));
+	//if (GEngine)GEngine->AddOnScreenDebugMessage(1, 0.02f, FColor::Orange, FString::FromInt(Result));
 }
 
 // Called to bind functionality to input

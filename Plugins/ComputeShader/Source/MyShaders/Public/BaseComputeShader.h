@@ -30,17 +30,22 @@ struct MYSHADERS_API FBaseComputeShaderDispatchParams
 	int X, Y, Z;
 
 	int Input[2];
+	
+	//float Input1;
+	//float Input2;
 	int Output;
 };
+
+typedef TFunction<void(int OutputVal)> CALL;
 
 // This is a public interface that we define so outside code can invoke our compute shader.
 class MYSHADERS_API FBaseComputeShaderInterface {
 public:
 	// Executes this shader on the render thread
-	static void DispatchRenderThread(FRHICommandListImmediate& RHICmdList, FBaseComputeShaderDispatchParams Params, TFunction<void(int OutputVal)> AsyncCallback);
+	static void DispatchRenderThread(FRHICommandListImmediate& RHICmdList, FBaseComputeShaderDispatchParams Params, CALL AsyncCallback);
 
 	// Executes this shader on the render thread from the game thread via EnqueueRenderThreadCommand
-	static void DispatchGameThread(FBaseComputeShaderDispatchParams Params, TFunction<void(int OutputVal)> AsyncCallback)
+	static void DispatchGameThread(FBaseComputeShaderDispatchParams Params, CALL AsyncCallback)
 	{
 		ENQUEUE_RENDER_COMMAND(SceneDrawCompletion)([Params, AsyncCallback](FRHICommandListImmediate& RHICmdList)
 			{
@@ -50,7 +55,7 @@ public:
 	}
 
 	// Dispatches this shader. Can be called from any thread
-	static void Dispatch(FBaseComputeShaderDispatchParams Params, TFunction<void(int OutputVal)> AsyncCallback)
+	static void Dispatch(FBaseComputeShaderDispatchParams Params, CALL AsyncCallback)
 	{
 		if (IsInRenderingThread()) {
 			DispatchRenderThread(GetImmediateCommandList_ForRenderCommand(), Params, AsyncCallback);

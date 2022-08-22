@@ -61,7 +61,7 @@ private:
 //                            ShaderType                ShaderPath              Shader function name    Type
 IMPLEMENT_GLOBAL_SHADER(FBaseComputeShader, "/MyShaders/BaseComputeShader.usf", "BaseComputeShader", SF_Compute);
 
-void FBaseComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate& RHICmdList, FBaseComputeShaderDispatchParams Params, TFunction<void(int OutputVal)> AsyncCallback) 
+void FBaseComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate& RHICmdList, FBaseComputeShaderDispatchParams Params, CALL AsyncCallback) 
 { 
 	FRDGBuilder GraphBuilder(RHICmdList);
 	// new scope
@@ -92,12 +92,15 @@ void FBaseComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate&
 			int NumInputs = 2;
 			int InputSize = sizeof(int);
 			InputBuffer = CreateUploadBuffer(GraphBuilder, TEXT("InputBuffer"), InputSize, NumInputs, RawData, InputSize * NumInputs);
-
+			
 			PassParameters->Input = GraphBuilder.CreateSRV(FRDGBufferSRVDesc(InputBuffer, PF_R32_SINT));
+			//PassParameters->Input = GraphBuilder.CreateSRV(FRDGBufferSRVDesc(InputBuffer, PF_R32_FLOAT));
 
-			OutputBuffer = GraphBuilder.CreateBuffer(FRDGBufferDesc::CreateBufferDesc(sizeof(int32), 1), TEXT("OutputBuffer"));
+			int OutputSize = sizeof(int);
+			OutputBuffer = GraphBuilder.CreateBuffer(FRDGBufferDesc::CreateBufferDesc(OutputSize, 1), TEXT("OutputBuffer"));
 
 			PassParameters->Output = GraphBuilder.CreateUAV(FRDGBufferUAVDesc(OutputBuffer, PF_R32_SINT));
+			//PassParameters->Output = GraphBuilder.CreateUAV(FRDGBufferUAVDesc(OutputBuffer, PF_R32_FLOAT));
 
 			auto GroupCount = FComputeShaderUtils::GetGroupCount(FIntVector(Params.X, Params.Y, Params.Z), FComputeShaderUtils::kGolden2DGroupSize);
 			GraphBuilder.AddPass(RDG_EVENT_NAME("ExecuteBaseComputeShader"), PassParameters, ERDGPassFlags::AsyncCompute, [&PassParameters, ComputeShader, GroupCount](FRHIComputeCommandList& RHICmdList)
