@@ -62,8 +62,11 @@ void FBaseComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate&
 		{
 			FBaseComputeShader::FParameters* PassParameters = GraphBuilder.AllocParameters<FBaseComputeShader::FParameters>();
 
-			FRDGBuffer* InputBuffer = CreateUploadBuffer(GraphBuilder, TEXT("InputBuffer"), sizeof(int), 2, (void*)Params.Input, sizeof(int) * 2);
-			FRDGBuffer* OutputBuffer = GraphBuilder.CreateBuffer(FRDGBufferDesc::CreateBufferDesc(sizeof(int), 1), TEXT("OutputBuffer"));
+			int InputSize = 4; // 4 bytes for ints and floats, different if you want to use other datatypes.
+			int OutputSize = 4; // ^ 
+
+			FRDGBuffer* InputBuffer = CreateUploadBuffer(GraphBuilder, TEXT("InputBuffer"), InputSize, 2, (void*)Params.Input, InputSize * 2);
+			FRDGBuffer* OutputBuffer = GraphBuilder.CreateBuffer(FRDGBufferDesc::CreateBufferDesc(InputSize, 1), TEXT("OutputBuffer"));
 
 			PassParameters->IntInput = GraphBuilder.CreateSRV(FRDGBufferSRVDesc(InputBuffer, PF_R32_FLOAT));
 			PassParameters->IntOutput = GraphBuilder.CreateUAV(FRDGBufferUAVDesc(OutputBuffer, PF_R32_FLOAT)); //PF_R32_FLOAT PF_R32_SINT
@@ -81,7 +84,7 @@ void FBaseComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate&
 
 			auto RunnerFunc = [GPUBufferReadback, AsyncCallback](auto&& RunnerFunc) -> void {
 				if (GPUBufferReadback->IsReady()) {
-
+					// Change Buffer pointer type and OutVal type to desired shader output.
 					float* Buffer = (float*)GPUBufferReadback->Lock(1);
 					float OutVal = Buffer[0];
 
