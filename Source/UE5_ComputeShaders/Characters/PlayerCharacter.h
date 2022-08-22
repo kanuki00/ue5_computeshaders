@@ -31,7 +31,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
 		UCameraComponent* Camera;
 
-	void Set(float Out);
+	// Result of compute shader
+	int Result;
 
 protected:
 	// Called when the game starts or when spawned

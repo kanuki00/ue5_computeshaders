@@ -28,11 +28,6 @@ APlayerCharacter::APlayerCharacter()
 	Camera->bUsePawnControlRotation = true;
 }
 
-void APlayerCharacter::Set(float Out)
-{
-	if (GEngine)GEngine->AddOnScreenDebugMessage(1, 0.02f, FColor::Orange, FString::SanitizeFloat(Out));
-}
-
 // Called when the game starts or when spawned
 void APlayerCharacter::BeginPlay()
 {
@@ -45,25 +40,16 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	/*
-	FMySimpleComputeShaderDispatchParams Params(1, 1, 1);
-
-	Params.Input[0] = 6;
-	Params.Input[1] = 5;
-
-	FMySimpleComputeShaderInterface::Dispatch(Params, [this](int OutputVal) {
-		this->Set(OutputVal);
-	});
-	*/
 	FBaseComputeShaderDispatchParams Params(1, 1, 1);
 
 	Params.Input[0] = 56;
 	Params.Input[1] = 2;
 
-	FBaseComputeShaderInterface::Dispatch(Params, [this](int OutputVal) {
-		this->Set(OutputVal);
+	FBaseComputeShaderInterface::Dispatch(Params, [&](int OutputVal) {
+		Result = OutputVal;
 		});
 	
+	if (GEngine)GEngine->AddOnScreenDebugMessage(1, 0.02f, FColor::Orange, FString::FromInt(Result));
 }
 
 // Called to bind functionality to input
@@ -71,7 +57,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	PlayerInputComponent->BindAxis("MoveForward", this, & APlayerCharacter::MoveForwardBind);
+	PlayerInputComponent->BindAxis("MoveForward", this, &APlayerCharacter::MoveForwardBind);
 	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerCharacter::MoveRightBind);
 	PlayerInputComponent->BindAxis("LookUp", this, &APlayerCharacter::LookUpBind);
 	PlayerInputComponent->BindAxis("LookRight", this, &APlayerCharacter::LookRightBind);

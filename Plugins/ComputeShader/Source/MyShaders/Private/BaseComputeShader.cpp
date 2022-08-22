@@ -61,6 +61,7 @@ IMPLEMENT_GLOBAL_SHADER(FBaseComputeShader, "/MyShaders/BaseComputeShader.usf", 
 void FBaseComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate& RHICmdList, FBaseComputeShaderDispatchParams Params, TFunction<void(int OutputVal)> AsyncCallback) 
 { 
 	FRDGBuilder GraphBuilder(RHICmdList);
+	// new scope
 	{
 		SCOPE_CYCLE_COUNTER(STAT_BaseComputeShader_Execute);
 		DECLARE_GPU_STAT(BaseComputeShader)
@@ -132,7 +133,8 @@ void FBaseComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate&
 		}
 		else {
 			// We silently exit here as we don't want to crash the game if the shader is not found or has an error.
-		}
-	}
+
+		} 
+	} // end new scope
 	GraphBuilder.Execute();
 }
