@@ -14,7 +14,7 @@
 DECLARE_STATS_GROUP(TEXT("BaseComputeShader"), STATGROUP_BaseComputeShader, STATCAT_Advanced);
 DECLARE_CYCLE_STAT(TEXT("BaseComputeShader Execute"), STAT_BaseComputeShader_Execute, STATGROUP_BaseComputeShader);
 
-// This class carries our parameter declarations and acts as the bridge between cpp and HLSL.
+/*This class carries our parameter declarationsand acts as the bridge between cppand HLSL.*/
 class MYSHADERS_API FBaseComputeShader : public FGlobalShader
 {
 public:
@@ -30,7 +30,7 @@ public:
 		SHADER_PARAMETER_RDG_BUFFER_SRV(Buffer<int>, Input)
 		SHADER_PARAMETER_RDG_BUFFER_UAV(RWBuffer<int>, Output)
 
-		END_SHADER_PARAMETER_STRUCT()
+	END_SHADER_PARAMETER_STRUCT()
 
 public:
 	static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters)

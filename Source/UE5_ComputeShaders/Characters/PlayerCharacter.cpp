@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "PlayerCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -8,6 +7,7 @@
 // Shader includes
 //#include "MyShaders/Public/MySimpleComputeShader.h"
 #include "MyShaders/Public/BaseComputeShader.h"
+#include "MyShaders/Public/CS1.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -28,9 +28,9 @@ APlayerCharacter::APlayerCharacter()
 	Camera->bUsePawnControlRotation = true;
 }
 
-void APlayerCharacter::Set(int Out)
+void APlayerCharacter::Set(float Out)
 {
-	if (GEngine)GEngine->AddOnScreenDebugMessage(1, 0.02f, FColor::Orange, FString::FromInt(Out));
+	if (GEngine)GEngine->AddOnScreenDebugMessage(1, 0.02f, FColor::Orange, FString::SanitizeFloat(Out));
 }
 
 // Called when the game starts or when spawned
@@ -57,8 +57,8 @@ void APlayerCharacter::Tick(float DeltaTime)
 	*/
 	FBaseComputeShaderDispatchParams Params(1, 1, 1);
 
-	Params.Input[0] = 10;
-	Params.Input[1] = 20;
+	Params.Input[0] = 56;
+	Params.Input[1] = 2;
 
 	FBaseComputeShaderInterface::Dispatch(Params, [this](int OutputVal) {
 		this->Set(OutputVal);

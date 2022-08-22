@@ -31,7 +31,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
 		UCameraComponent* Camera;
 
-	void Set(int Out);
+	void Set(float Out);
 
 protected:
 	// Called when the game starts or when spawned
