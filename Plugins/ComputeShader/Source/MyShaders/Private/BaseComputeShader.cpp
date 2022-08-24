@@ -1,14 +1,22 @@
+/*
+The way that this compute shader works is that you game object calls
+Dispatch() and passes a new structure with parameters into it. The
+shader gets run once and then returns the value throught a lambda
+function. This is kind of a novelty compute shader since Dispatch()
+is very expensive and cannot be called that often without slowdown.
+*/
+
 #include "BaseComputeShader.h"
 #include "MyShaders/Public/BaseComputeShader.h"
-#include "PixelShaderUtils.h"
+//#include "PixelShaderUtils.h"
 #include "RenderCore/Public/RenderGraphUtils.h"
 #include "MeshPassProcessor.inl"
-#include "StaticMeshResources.h"
-#include "DynamicMeshBuilder.h"
+//#include "StaticMeshResources.h"
+//#include "DynamicMeshBuilder.h"
 #include "RenderGraphResources.h"
 #include "GlobalShader.h"
-#include "UnifiedBuffer.h"
-#include "CanvasTypes.h"
+//#include "UnifiedBuffer.h"
+//#include "CanvasTypes.h"
 #include "MaterialShader.h"
 
 // This class carries our parameter declarations and acts as the bridge between cpp and HLSL.
